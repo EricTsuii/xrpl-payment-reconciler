@@ -6,7 +6,7 @@
 ARG PNPM_VERSION=12.4.1
 
 # --- deps: every dependency, for the build -----------------------------------
-FROM node:22.23.2-bookworm-slim AS deps
+FROM node:26.8.2-bookworm-slim AS deps
 ARG PNPM_VERSION
 WORKDIR /app
 RUN npm install --global pnpm@${PNPM_VERSION} \
@@ -21,7 +21,7 @@ COPY src ./src
 RUN pnpm build
 
 # --- production-deps: runtime dependencies only ------------------------------
-FROM node:22.23.2-bookworm-slim AS production-deps
+FROM node:26.8.2-bookworm-slim AS production-deps
 ARG PNPM_VERSION
 WORKDIR /app
 RUN npm install --global pnpm@${PNPM_VERSION} \
@@ -30,7 +30,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
 # --- runtime -----------------------------------------------------------------
-FROM node:22.23.2-bookworm-slim AS runtime
+FROM node:26.8.2-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --chown=node:node package.json ./
