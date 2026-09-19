@@ -1,0 +1,28 @@
+{
+  "close_time_iso": "2026-09-18T13:42:46Z",
+  "hash": "C31620562736B3C8A62901524697C9D3BC46DCC6AB95B7C18EFE2D1FC166D583",
+  "ledger_hash": "86957A7EE35F205E2B2131943AFF92938ABC6A4D6AE2F9EF704255FAEB4C0FD1",
+  "ledger_index": 1006,
+  "meta": {
+    "AffectedNodes": [],
+    "TransactionIndex": 2,
+    "TransactionResult": "tesSUCCESS",
+    "delivered_amount": "1"
+  },
+  "tx_json": {
+    "Account": "rh2xZ4eMVbgFkG4BuLhzaZCdnZNknHT2t7",
+    "DeliverMax": "1",
+    "Destination": "rJEU6yQMF1TCghSbzUH693U2PRVNf97Dyf",
+    "Fee": "12",
+    "Flags": 0,
+    "LastLedgerSequence": 1024,
+    "Sequence": 17,
+    "SigningPubKey": "EDA3952ACD931CCA26CC02AEA89037FCFD69821C428C8C3B6AB7A8E73C13E6926E",
+    "TransactionType": "Payment",
+    "TxnSignature": "AF25BB97416158AFD9F5DC311C1A6781946418566FE655DD17BCCEF74D2E24749EDD41C39779A34A268BDA22B84A741E577C4A9A2C6A7B72E94A5E77258CBB34",
+    "ctid": "C00003EE00020001",
+    "date": 843054166,
+    "ledger_index": 1006
+  },
+  "validated": true
+}

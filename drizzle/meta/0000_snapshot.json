@@ -1,0 +1,576 @@
+{
+  "id": "50888bc9-c5f9-4bc4-bdc6-32490bf12b9d",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account_cursors": {
+      "name": "account_cursors",
+      "schema": "",
+      "columns": {
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "last_reconciled_ledger": {
+          "name": "last_reconciled_ledger",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_reconciled_at": {
+          "name": "last_reconciled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_cursors_account_id_monitored_accounts_id_fk": {
+          "name": "account_cursors_account_id_monitored_accounts_id_fk",
+          "tableFrom": "account_cursors",
+          "tableTo": "monitored_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "account_cursors_last_reconciled_ledger_check": {
+          "name": "account_cursors_last_reconciled_ledger_check",
+          "value": "\"account_cursors\".\"last_reconciled_ledger\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.monitored_accounts": {
+      "name": "monitored_accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "network_id": {
+          "name": "network_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "monitored_accounts_network_id_address_key": {
+          "name": "monitored_accounts_network_id_address_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "network_id",
+            "address"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "monitored_accounts_network_id_check": {
+          "name": "monitored_accounts_network_id_check",
+          "value": "\"monitored_accounts\".\"network_id\" BETWEEN 0 AND 65535"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.outbox_events": {
+      "name": "outbox_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aggregate_id": {
+          "name": "aggregate_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "outbox_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "available_at": {
+          "name": "available_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "locked_by": {
+          "name": "locked_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "locked_until": {
+          "name": "locked_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "outbox_events_pending_idx": {
+          "name": "outbox_events_pending_idx",
+          "columns": [
+            {
+              "expression": "available_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "locked_until",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"outbox_events\".\"status\" = 'PENDING'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "outbox_events_aggregate_id_payments_id_fk": {
+          "name": "outbox_events_aggregate_id_payments_id_fk",
+          "tableFrom": "outbox_events",
+          "tableTo": "payments",
+          "columnsFrom": [
+            "aggregate_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "outbox_events_event_type_aggregate_id_key": {
+          "name": "outbox_events_event_type_aggregate_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "event_type",
+            "aggregate_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "outbox_events_event_type_check": {
+          "name": "outbox_events_event_type_check",
+          "value": "\"outbox_events\".\"event_type\" = 'payment.validated'"
+        },
+        "outbox_events_attempt_count_check": {
+          "name": "outbox_events_attempt_count_check",
+          "value": "\"outbox_events\".\"attempt_count\" BETWEEN 0 AND 5"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.payments": {
+      "name": "payments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "monitored_account_id": {
+          "name": "monitored_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "network_id": {
+          "name": "network_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transaction_hash": {
+          "name": "transaction_hash",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xrpl_ctid": {
+          "name": "xrpl_ctid",
+          "type": "char(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ledger_index": {
+          "name": "ledger_index",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transaction_index": {
+          "name": "transaction_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ledger_hash": {
+          "name": "ledger_hash",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "close_time": {
+          "name": "close_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_account": {
+          "name": "source_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "destination_account": {
+          "name": "destination_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "destination_tag": {
+          "name": "destination_tag",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "asset_type": {
+          "name": "asset_type",
+          "type": "payment_asset_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "issuer": {
+          "name": "issuer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "drops": {
+          "name": "drops",
+          "type": "numeric(30, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transaction_result": {
+          "name": "transaction_result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_transaction": {
+          "name": "raw_transaction",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_metadata": {
+          "name": "raw_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "payments_account_order_idx": {
+          "name": "payments_account_order_idx",
+          "columns": [
+            {
+              "expression": "monitored_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ledger_index",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "transaction_index",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_destination_tag_idx": {
+          "name": "payments_destination_tag_idx",
+          "columns": [
+            {
+              "expression": "destination_tag",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"payments\".\"destination_tag\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "payments_monitored_account_id_monitored_accounts_id_fk": {
+          "name": "payments_monitored_account_id_monitored_accounts_id_fk",
+          "tableFrom": "payments",
+          "tableTo": "monitored_accounts",
+          "columnsFrom": [
+            "monitored_account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "payments_network_id_transaction_hash_key": {
+          "name": "payments_network_id_transaction_hash_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "network_id",
+            "transaction_hash"
+          ]
+        },
+        "payments_network_id_xrpl_ctid_key": {
+          "name": "payments_network_id_xrpl_ctid_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "network_id",
+            "xrpl_ctid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "payments_network_id_check": {
+          "name": "payments_network_id_check",
+          "value": "\"payments\".\"network_id\" BETWEEN 0 AND 65535"
+        },
+        "payments_ledger_index_check": {
+          "name": "payments_ledger_index_check",
+          "value": "\"payments\".\"ledger_index\" BETWEEN 0 AND 268435455"
+        },
+        "payments_transaction_index_check": {
+          "name": "payments_transaction_index_check",
+          "value": "\"payments\".\"transaction_index\" BETWEEN 0 AND 65535"
+        },
+        "payments_destination_tag_check": {
+          "name": "payments_destination_tag_check",
+          "value": "\"payments\".\"destination_tag\" IS NULL OR \"payments\".\"destination_tag\" BETWEEN 0 AND 4294967295"
+        },
+        "payments_transaction_hash_check": {
+          "name": "payments_transaction_hash_check",
+          "value": "\"payments\".\"transaction_hash\" ~ '^[A-F0-9]{64}$'"
+        },
+        "payments_ledger_hash_check": {
+          "name": "payments_ledger_hash_check",
+          "value": "\"payments\".\"ledger_hash\" ~ '^[A-F0-9]{64}$'"
+        },
+        "payments_xrpl_ctid_check": {
+          "name": "payments_xrpl_ctid_check",
+          "value": "\"payments\".\"xrpl_ctid\" ~ '^C[A-F0-9]{15}$'"
+        },
+        "payments_xrp_amount_check": {
+          "name": "payments_xrp_amount_check",
+          "value": "\"payments\".\"asset_type\" <> 'XRP' OR (\"payments\".\"drops\" IS NOT NULL AND \"payments\".\"currency\" IS NULL AND \"payments\".\"issuer\" IS NULL AND \"payments\".\"value\" IS NULL)"
+        },
+        "payments_issued_amount_check": {
+          "name": "payments_issued_amount_check",
+          "value": "\"payments\".\"asset_type\" <> 'ISSUED_CURRENCY' OR (\"payments\".\"drops\" IS NULL AND \"payments\".\"currency\" IS NOT NULL AND \"payments\".\"issuer\" IS NOT NULL AND \"payments\".\"value\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.outbox_status": {
+      "name": "outbox_status",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "DELIVERED",
+        "DEAD"
+      ]
+    },
+    "public.payment_asset_type": {
+      "name": "payment_asset_type",
+      "schema": "public",
+      "values": [
+        "XRP",
+        "ISSUED_CURRENCY"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

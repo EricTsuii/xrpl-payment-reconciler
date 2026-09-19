@@ -1,0 +1,74 @@
+name: xrpl-payment-reconciler
+
+services:
+  postgres:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_DB: reconciler
+      POSTGRES_USER: reconciler
+      POSTGRES_PASSWORD: reconciler_local_only
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reconciler -d reconciler']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4.11-bookworm
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build: .
+    command: ['node', 'dist/database/migrate.js']
+    environment:
+      DATABASE_URL: postgresql://reconciler:reconciler_local_only@postgres:5432/reconciler
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://reconciler:reconciler_local_only@postgres:5432/reconciler
+      REDIS_URL: redis://redis:6379
+      XRPL_NETWORK_ID: ${XRPL_NETWORK_ID:-1}
+      XRPL_PRIMARY_URL: ${XRPL_PRIMARY_URL:-wss://s.altnet.rippletest.net:51233/}
+      XRPL_SECONDARY_URL: ${XRPL_SECONDARY_URL:-wss://testnet.xrpl-labs.com/}
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      LOG_LEVEL: ${LOG_LEVEL:-log}
+      PORT: '3000'
+    ports:
+      - '127.0.0.1:3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:

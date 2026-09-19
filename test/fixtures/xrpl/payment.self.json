@@ -1,0 +1,37 @@
+{
+  "close_time_iso": "2026-09-18T13:42:51Z",
+  "hash": "06C604B332B386B6CCE8355CCF27FFFD3A98B7A7A5B9B3A550C039C6EBAE38E4",
+  "ledger_hash": "81C32FE35A8D8B076593B0389079EFB9517E499C959A1534EED1135F7C772932",
+  "ledger_index": 1011,
+  "meta": {
+    "AffectedNodes": [],
+    "TransactionIndex": 5,
+    "TransactionResult": "tesSUCCESS",
+    "delivered_amount": {
+      "currency": "USD",
+      "issuer": "r9VzjdX8m8Fpki1W9k4KutXtVrBbB2LT3p",
+      "value": "1"
+    }
+  },
+  "tx_json": {
+    "Account": "rJEU6yQMF1TCghSbzUH693U2PRVNf97Dyf",
+    "DeliverMax": {
+      "currency": "USD",
+      "issuer": "r9VzjdX8m8Fpki1W9k4KutXtVrBbB2LT3p",
+      "value": "1"
+    },
+    "Destination": "rJEU6yQMF1TCghSbzUH693U2PRVNf97Dyf",
+    "Fee": "12",
+    "Flags": 0,
+    "LastLedgerSequence": 1029,
+    "SendMax": "2000000",
+    "Sequence": 17,
+    "SigningPubKey": "EDA3952ACD931CCA26CC02AEA89037FCFD69821C428C8C3B6AB7A8E73C13E6926E",
+    "TransactionType": "Payment",
+    "TxnSignature": "651EB6F1CBF9D053B0CE2BC3D76C34F72925A37D8F5B6B8E9675E23E3997358CA7D607FDBAD11693C77E0DA060C55F3EDF264EEA585DA8E828D39C3D9276FCE3",
+    "ctid": "C00003F300050001",
+    "date": 843054171,
+    "ledger_index": 1011
+  },
+  "validated": true
+}

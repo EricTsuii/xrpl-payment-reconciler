@@ -1,0 +1,5 @@
+# pnpm 12 refuses to run dependency build scripts unless they are approved.
+# esbuild is pulled in by tsx and drizzle-kit (development only); its
+# postinstall step only verifies the platform binary.
+allowBuilds:
+  esbuild: true

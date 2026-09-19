@@ -1,0 +1,30 @@
+{
+  "close_time_iso": "2026-09-18T13:42:52Z",
+  "hash": "F6B3ABEE65FDDE4AA7AD597B4ACEAA485CFEA08F3E223085E1BE929FB3A75FE8",
+  "ledger_hash": "1AB25E9A8CA02F71A42CE2AA122185659EAA363BFFD0E0D2D304B622FD496C49",
+  "ledger_index": 1012,
+  "meta": {
+    "AffectedNodes": [],
+    "TransactionIndex": 6,
+    "TransactionResult": "tesSUCCESS"
+  },
+  "tx_json": {
+    "Account": "rJEU6yQMF1TCghSbzUH693U2PRVNf97Dyf",
+    "Fee": "12",
+    "Flags": 0,
+    "LastLedgerSequence": 1030,
+    "LimitAmount": {
+      "currency": "USD",
+      "issuer": "r9VzjdX8m8Fpki1W9k4KutXtVrBbB2LT3p",
+      "value": "1000"
+    },
+    "Sequence": 17,
+    "SigningPubKey": "EDA3952ACD931CCA26CC02AEA89037FCFD69821C428C8C3B6AB7A8E73C13E6926E",
+    "TransactionType": "TrustSet",
+    "TxnSignature": "65AB074977B683BB0399225C4C8DE66F3E38883021F4FC84F11FF4027DB8113010F4D949832E3399F017DFFE7A1953E4AB1F6BFC4AEC286B5F883377F14F3CCE",
+    "ctid": "C00003F400060001",
+    "date": 843054172,
+    "ledger_index": 1012
+  },
+  "validated": true
+}
