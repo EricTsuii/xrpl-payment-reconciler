@@ -9,6 +9,8 @@ updates:
       # Major versions change the pinned stack and need a new specification.
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
+      # fastify must stay on the version @nestjs/platform-fastify depends on.
+      - dependency-name: fastify
     groups:
       nestjs:
         patterns: ['@nestjs/*']
