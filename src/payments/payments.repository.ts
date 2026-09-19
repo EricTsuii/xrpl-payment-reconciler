@@ -7,9 +7,6 @@ import { OutboxRepository } from '../outbox/outbox.repository';
 import type { NormalizedPayment } from '../xrpl/payment-normalizer.service';
 import { paymentValidatedBody } from './payment.presenter';
 
-const CTID_UNIQUE = 'payments_network_id_xrpl_ctid_key';
-const UNIQUE_VIOLATION = '23505';
-
 export type PersistResult =
   | { outcome: 'ACCEPTED'; payment: PaymentRow }
   | { outcome: 'DUPLICATE'; payment: PaymentRow }
@@ -37,53 +34,51 @@ export class PaymentsRepository {
    * nothing is written.
    */
   async persist(payment: NormalizedPayment): Promise<PersistResult> {
-    try {
-      return await this.database.transaction(async (tx) => {
-        const [inserted] = await tx
-          .insert(payments)
-          .values(toRow(payment))
-          .onConflictDoNothing({ target: [payments.networkId, payments.transactionHash] })
-          .returning();
+    return this.database.transaction(async (tx) => {
+      // No conflict target: every unique index (transaction hash and CTID) is
+      // an arbiter, so concurrent deliveries of one transaction never raise a
+      // unique violation. The outcome is classified below instead.
+      const [inserted] = await tx
+        .insert(payments)
+        .values(toRow(payment))
+        .onConflictDoNothing()
+        .returning();
 
-        if (inserted === undefined) {
-          const [existing] = await tx
-            .select()
-            .from(payments)
-            .where(
-              and(
-                eq(payments.networkId, payment.networkId),
-                eq(payments.transactionHash, payment.hash),
-              ),
-            );
-          if (existing === undefined) {
-            throw new Error('payment conflict without an existing row');
-          }
-          const difference = differingField(existing, payment);
-          return difference === undefined
-            ? { outcome: 'DUPLICATE', payment: existing }
-            : {
-                outcome: 'INTEGRITY_ERROR',
-                reason: `hash ${payment.hash} was stored with a different ${difference}`,
-              };
+      if (inserted === undefined) {
+        const [existing] = await tx
+          .select()
+          .from(payments)
+          .where(
+            and(
+              eq(payments.networkId, payment.networkId),
+              eq(payments.transactionHash, payment.hash),
+            ),
+          );
+        if (existing === undefined) {
+          // The insert conflicted, but not on this hash: the CTID belongs to
+          // another transaction. Nothing was written.
+          return {
+            outcome: 'INTEGRITY_ERROR',
+            reason: `CTID ${payment.ctid} already belongs to another transaction`,
+          };
         }
-
-        const eventId = randomUUID();
-        await this.outbox.insert(tx, {
-          id: eventId,
-          aggregateId: inserted.id,
-          body: paymentValidatedBody(eventId, inserted),
-        });
-        return { outcome: 'ACCEPTED', payment: inserted };
-      });
-    } catch (error) {
-      if (isUniqueViolation(error, CTID_UNIQUE)) {
-        return {
-          outcome: 'INTEGRITY_ERROR',
-          reason: `CTID ${payment.ctid} already belongs to another transaction`,
-        };
+        const difference = differingField(existing, payment);
+        return difference === undefined
+          ? { outcome: 'DUPLICATE', payment: existing }
+          : {
+              outcome: 'INTEGRITY_ERROR',
+              reason: `hash ${payment.hash} was stored with a different ${difference}`,
+            };
       }
-      throw error;
-    }
+
+      const eventId = randomUUID();
+      await this.outbox.insert(tx, {
+        id: eventId,
+        aggregateId: inserted.id,
+        body: paymentValidatedBody(eventId, inserted),
+      });
+      return { outcome: 'ACCEPTED', payment: inserted };
+    });
   }
 
   async findById(id: string): Promise<PaymentRow | undefined> {
@@ -180,16 +175,4 @@ function differingField(existing: PaymentRow, payment: NormalizedPayment): strin
     ['transaction_result', existing.transactionResult, replay.transactionResult],
   ];
   return checks.find(([, stored, replayed]) => stored !== replayed)?.[0];
-}
-
-function isUniqueViolation(error: unknown, constraint: string): boolean {
-  let current: unknown = error;
-  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth += 1) {
-    const candidate = current as { code?: unknown; constraint?: unknown; cause?: unknown };
-    if (candidate.code === UNIQUE_VIOLATION && candidate.constraint === constraint) {
-      return true;
-    }
-    current = candidate.cause;
-  }
-  return false;
 }
