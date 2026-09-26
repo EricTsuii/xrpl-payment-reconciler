@@ -27,10 +27,10 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
   },
   "dependencies": {
-    "@nestjs/common": "12.0.2",
-    "@nestjs/config": "12.0.0",
-    "@nestjs/core": "12.0.2",
-    "@nestjs/platform-fastify": "12.0.2",
+    "@nestjs/common": "12.0.4",
+    "@nestjs/config": "12.0.1",
+    "@nestjs/core": "12.0.4",
+    "@nestjs/platform-fastify": "12.0.4",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "drizzle-orm": "0.45.2",
@@ -43,8 +43,8 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@nestjs/cli": "12.0.1",
-    "@nestjs/testing": "12.0.2",
+    "@nestjs/cli": "12.0.5",
+    "@nestjs/testing": "12.0.4",
     "@types/jest": "29.5.14",
     "@types/node": "22.20.2",
     "@types/pg": "8.23.1",
