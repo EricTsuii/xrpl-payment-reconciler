@@ -24,6 +24,25 @@ This service treats the stream as a latency optimization and the account history
 - A reconciliation cursor moves only after its whole ledger range was inspected.
 - No wallet, no keys, no signing, no submission.
 
+### Payment correctness
+
+A validated XRPL payment may be observed through multiple paths:
+
+- live WebSocket ingestion
+- periodic `account_tx` reconciliation
+- replay after a process restart
+- recovery after XRPL endpoint failover
+
+All ingestion paths converge on the same normalization and persistence logic.
+
+The core invariant is:
+
+> One successful validated XRPL Payment creates exactly one logical payment record and exactly one logical outbox event regardless of duplicate ingestion, replay or recovery.
+
+A validated payment may be observed more than once, but it must be recorded only once.
+
+PostgreSQL provides the durable idempotency boundary. Redis coordinates reconciliation work and is not a source of durable payment truth.
+
 ## Architecture
 
 ```text
