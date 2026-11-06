@@ -54,6 +54,25 @@ If a transport failover happens mid-pagination the scan stops without moving the
 
 `last_reconciled_ledger = N` means the account's history through validated ledger N has been inspected by the reconciliation path. The cursor moves only after every page is processed, coverage is confirmed, no integrity error occurred and the lease is confirmed still owned — and then with an optimistic `UPDATE … WHERE last_reconciled_ledger = <expected>` that must affect exactly one row. A crash after storing payments but before this update replays the range; unique constraints absorb the replay.
 
+`account_cursors.last_reconciled_ledger` belongs exclusively to the reconciliation path.
+
+Live WebSocket ingestion never advances the reconciliation cursor.
+
+The cursor means that account history through the recorded validated ledger has been fully inspected by the reconciliation path.
+
+A reconciliation cycle advances the cursor only after:
+
+- all `account_tx` marker pages are complete
+- the requested ledger range is fully covered
+- all returned payloads pass integrity checks
+- all transactions in the range are processed
+- no `INTEGRITY_ERROR` occurs
+- the per-account Redis reconciliation lease is still owned
+
+If the process stops after persisting a payment but before advancing the cursor, the ledger range is replayed during a later reconciliation cycle. PostgreSQL uniqueness constraints make this replay safe.
+
+WebSocket ingestion is therefore the low-latency path, while `account_tx` reconciliation is the correctness path.
+
 ## Account Activation Race Closure
 
 Activation: capture validated ledger H0 → insert the account disabled with cursor H0 → acquire the lease → subscribe → capture H1 → reconcile H0+1…H1 → enable (checking the 25-account limit atomically) → release. A payment validated while the subscription was being made lands between H0 and H1 and is found by the activation reconciliation. Live events for the still-disabled account are ignored, which is safe: later cycles start from H1. If any step fails the service unsubscribes, deletes the new account (its cursor cascades) and answers `503 ACCOUNT_ACTIVATION_FAILED`; if the activation reconciliation had already stored a payment, the account row is kept disabled because payments reference it.
