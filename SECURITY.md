@@ -44,6 +44,23 @@ The cursor never moves over a range the endpoint could not fully cover. Missing 
 
 There is no authentication in v0.1.0. The service listens on all interfaces inside its container; compose publishes it on `127.0.0.1` only. Keep it on a trusted network or behind an authenticating proxy. Request bodies are limited to 64 KiB, unknown fields and query keys are rejected, proxy headers are not trusted, and CORS is off.
 
+The administrative REST API is intended for a trusted private or local network boundary.
+
+XRPL Payment Reconciler v0.1.0 does not implement:
+
+- user accounts
+- sessions
+- JWT authentication
+- OAuth
+- API keys
+- roles or authorization policies
+
+Administrative endpoints must not be exposed directly to the public Internet or other untrusted clients without an external authentication and authorization layer.
+
+Status and diagnostic responses must not expose sensitive runtime configuration such as database URLs, Redis URLs, webhook secrets, authenticated endpoint URLs or environment dumps.
+
+Authentication is intentionally outside the v0.1.0 scope rather than being implemented as an incomplete security layer.
+
 ## Database Credentials
 
 `DATABASE_URL` is read from the environment and never logged or returned; `/v1/status` reports reachability only. The compose credentials are for local development. All SQL goes through Drizzle or bound parameters; raw SQL exists only for `FOR UPDATE SKIP LOCKED` and the conditional cursor update, with every value bound.
