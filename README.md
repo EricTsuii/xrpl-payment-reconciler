@@ -184,6 +184,36 @@ X-Reconciler-Signature: sha256=<HMAC-SHA256 of the exact body, lowercase hex>
 
 2xx is success. Failures (network error, 5-second timeout, any other status including redirects) retry after 1, 5, 15 and 30 seconds; the fifth failure marks the event `DEAD`. A worker holds an event for 15 seconds; if it dies, the lock expires and another attempt may follow — which the stable event ID makes safe. DEAD events stay visible in `/v1/status` and never affect readiness.
 
+### Delivery semantics
+
+Webhook delivery is at-least-once. The event ID is stable across retries and consumers should deduplicate by `X-Reconciler-Event-Id`.
+
+Each accepted payment creates one durable logical outbox event.
+
+Retries preserve:
+
+- the same event ID
+- the same serialized request body
+- the same HMAC signature
+
+A network failure, timeout or non-2xx response may therefore cause the same logical event to be delivered more than once.
+
+The delivery model is:
+
+```text
+1 validated XRPL payment
+        ↓
+1 payment row
+        ↓
+1 durable outbox event
+        ↓
+1 stable event ID
+        ↓
+N HTTP delivery attempts
+```
+
+The service does not claim exactly-once HTTP delivery.
+
 ## Failure Recovery Scenarios
 
 Each is an automated test:
